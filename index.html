@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZenContacts | Secure P2P Address Book</title>
+  <meta name="description" content="ZenContacts - End-to-End Encrypted Private Address Book by Scobru.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font-sans: 'Outfit', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+
+      --accent: #3b82f6;
+      --accent-hover: #1d4ed8;
+      --accent-light: rgba(59, 130, 246, 0.08);
+      --badge-zen: #00b4d8;
+    }
+
+    /* Light Theme */
+    [data-theme="light"] {
+      --bg-app: #f4f5f6;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-editor: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --border-color-hover: rgba(0, 0, 0, 0.16);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+      --input-bg: #f9fafb;
+      --active-bg: #f3f4f6;
+    }
+
+    /* Dark Theme */
+    [data-theme="dark"] {
+      --bg-app: #0d0e12;
+      --bg-sidebar: #13151a;
+      --bg-card: #181b22;
+      --bg-editor: #181b22;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-color-hover: rgba(255, 255, 255, 0.15);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+      --input-bg: #111317;
+      --active-bg: #1f232b;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-app);
+      color: var(--text-primary);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ── Dashboard Layout ── */
+    .dashboard-wrapper {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .sidebar-logo i {
+      color: var(--accent);
+      font-size: 24px;
+    }
+
+    .hamburger-close {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      margin: 0 20px 16px;
+      background: var(--active-bg);
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .status-indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #e01e37;
+      box-shadow: 0 0 6px #e01e37;
+      display: inline-block;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .new-contact-btn {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0 20px 20px;
+      transition: background-color 0.2s, transform 0.2s;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    }
+
+    .new-contact-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 10px 20px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      margin: 2px 20px;
+      gap: 12px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .nav-item:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .nav-count {
+      margin-left: auto;
+      font-size: 11px;
+      background: var(--active-bg);
+      color: var(--text-secondary);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+    }
+
+    .nav-item.active .nav-count {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .categories-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+
+    .sidebar-action-btn {
+      flex: 1;
+      background: var(--active-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-action-btn:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    /* ── Middle Pane (Address Book List) ── */
+    .contacts-pane {
+      flex: 1;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .cal-header {
+      height: 72px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--bg-sidebar);
+      flex-shrink: 0;
+    }
+
+    .cal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .sidebar-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 20px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--bg-app);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 10px 12px 10px 36px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+      background: var(--bg-sidebar);
+    }
+
+    .contacts-count-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+    }
+
+    .contacts-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Alphabet Section Grouping */
+    .alpha-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .alpha-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 6px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding-left: 8px;
+    }
+
+    /* Contact Row */
+    .contact-row {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .contact-row:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .contact-row.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .contact-info-block {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Avatar Component */
+    .avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      color: #ffffff;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .contact-text-details {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+      align-items: center;
+    }
+
+    .contact-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .contact-meta-field {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .contact-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .contact-action-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .contact-action-btn:hover {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.05);
+    }
+
+    .contact-action-btn.fav-active {
+      color: #f59e0b;
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    /* ── Right Panel (Viewer / Editor) ── */
+    .editor-pane {
+      width: 460px;
+      background: var(--bg-editor);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+    }
+
+    .editor-pane.closed {
+      width: 0;
+      border-left: none;
+      transform: translateX(100%);
+    }
+
+    .editor-placeholder-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 40px;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 16px;
+    }
+
+    .placeholder-icon {
+      font-size: 48px;
+      color: var(--border-color-hover);
+    }
+
+    .editor-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 460px;
+    }
+
+    .viewer-mode,
+    .editor-mode {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .editor-toolbar {
+      height: 72px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--bg-card);
+      flex-shrink: 0;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: var(--active-bg);
+      color: var(--text-primary);
+    }
+
+    .viewer-body {
+      padding: 32px 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Big profile view avatar */
+    .viewer-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      font-size: 36px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      box-shadow: var(--shadow-md);
+    }
+
+    .viewer-title-block {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .viewer-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .viewer-job {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+    }
+
+    .viewer-quick-actions {
+      display: flex;
+      gap: 12px;
+      margin: 8px 0;
+    }
+
+    .quick-action-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      padding: 10px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      transition: all 0.2s;
+    }
+
+    .quick-action-button:hover {
+      background: var(--accent);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .quick-action-button i {
+      font-size: 18px;
+    }
+
+    .viewer-details-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 24px;
+    }
+
+    .detail-item-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .detail-item-icon {
+      font-size: 20px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .detail-item-text-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .detail-item-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .detail-item-value {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+
+    .detail-item-value.notes {
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* ── Form Styles ── */
+    .editor-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .form-group-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .editor-input {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    .editor-input:focus,
+    .editor-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .editor-textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 16px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      min-height: 120px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--active-bg);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    .btn-danger-text {
+      background: transparent;
+      color: #e01e37;
+    }
+
+    .btn-danger-text:hover {
+      background: rgba(224, 30, 55, 0.08);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      gap: 16px;
+      flex: 1;
+    }
+
+    .empty-icon {
+      font-size: 56px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    /* ── Overlay Backdrops ── */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      transition: opacity 0.3s ease;
+    }
+
+    /* ── Login screen ── */
+    .login-screen-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-app);
+      padding: 20px;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: -60px;
+      width: 120px;
+      height: 120px;
+      background: var(--accent);
+      filter: blur(80px);
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .login-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: var(--accent-light);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto;
+      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
+    }
+
+    .login-title-group h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .login-title-group p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+
+    .login-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px 12px 42px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+      background: var(--bg-card);
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    .login-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .login-footer-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 16px;
+    }
+
+    /* ── Toast Notification ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    /* ── Responsive breakpoints ── */
+    @media (max-width: 1024px) {
+      .editor-pane {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 480px;
+        z-index: 200;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+      }
+
+      .editor-pane.closed {
+        width: 100%;
+        max-width: 480px;
+        transform: translateX(100%);
+        box-shadow: none;
+      }
+
+      .editor-content-wrapper {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+      }
+
+      .sidebar-toggle {
+        display: block;
+      }
+
+      .hamburger-close {
+        display: block;
+      }
+
+      .editor-pane {
+        max-width: 100%;
+      }
+
+      .editor-pane.closed {
+        max-width: 100%;
+      }
+
+      .contact-text-details {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .contact-meta-field {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Decryption / Lock Screen -->
+  <div id="login-screen" class="login-screen-wrapper">
+    <div class="login-card">
+      <div class="login-logo">
+        <i class="ti ti-users-group"></i>
+      </div>
+      <div class="login-title-group">
+        <h1>ZenContacts</h1>
+        <p>Zero-Knowledge E2E Encrypted Address Book.<br>Enter credentials to decrypt your contacts.</p>
+      </div>
+      <div class="login-form">
+        <div class="input-wrapper">
+          <i class="ti ti-user"></i>
+          <input type="text" id="user-input" placeholder="Username" class="login-input" autocomplete="username">
+        </div>
+        <div class="input-wrapper">
+          <i class="ti ti-key"></i>
+          <input type="password" id="pass-input" placeholder="Password" class="login-input"
+            autocomplete="current-password">
+        </div>
+        <button id="login-btn" class="login-btn">
+          <i class="ti ti-lock-open"></i> Decrypt & Enter
+        </button>
+      </div>
+      <p class="login-footer-desc">
+        <i class="ti ti-info-circle"></i> Decryption keys derived locally in your browser. Master credentials never touch any server.
+      </p>
+    </div>
+  </div>
+
+  <!-- Dashboard App Layout -->
+  <div id="dashboard" class="dashboard-wrapper hidden">
+    <!-- Sidebar Backdrop Overlay on Mobile -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Left Panel -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="ti ti-users-group"></i>
+          <span>ZenContacts</span>
+        </div>
+        <button class="hamburger-close" onclick="toggleSidebar()" aria-label="Close menu">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+
+      <!-- Sync Status Indicator -->
+      <div class="sync-status">
+        <span class="status-indicator-dot" id="status-ping"></span>
+        <span id="status-footer-text">Connecting P2P...</span>
+      </div>
+
+      <!-- Create Contact FAB -->
+      <button class="new-contact-btn" onclick="createNewContact()">
+        <i class="ti ti-plus"></i> Create Contact
+      </button>
+
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        <a href="#" class="nav-item active" id="nav-all" onclick="setCategoryFilter('all')">
+          <i class="ti ti-address-book"></i>
+          <span class="nav-text">All Contacts</span>
+          <span class="nav-count" id="count-all">0</span>
+        </a>
+        <a href="#" class="nav-item" id="nav-favs" onclick="setCategoryFilter('favorites')">
+          <i class="ti ti-star"></i>
+          <span class="nav-text">Favorites</span>
+          <span class="nav-count" id="count-favs">0</span>
+        </a>
+
+        <div class="nav-section-title">Groups</div>
+        <div id="sidebar-categories" class="categories-list">
+          <!-- Dynamically populated categories -->
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button class="sidebar-action-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+          <i class="ti ti-sun" id="theme-icon"></i>
+          <span>Theme</span>
+        </button>
+        <button class="sidebar-action-btn" onclick="logout()" title="Lock Vault">
+          <i class="ti ti-lock"></i>
+          <span>Lock</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Address Book List Panel -->
+    <main class="contacts-pane">
+      <header class="cal-header">
+        <div class="cal-header-left">
+          <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Open menu">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          
+          <div class="search-box">
+            <i class="ti ti-search search-icon"></i>
+            <input type="text" id="search-input" placeholder="Search name, phone, email, notes..."
+              oninput="handleSearch(this.value)">
+          </div>
+
+          <span class="contacts-count-label" id="contacts-count-label">0 contacts</span>
+        </div>
+      </header>
+
+      <!-- Scrollable list of contacts grouped by A-Z -->
+      <div class="contacts-content" id="contacts-container">
+        <!-- Populated dynamically by renderApp() -->
+      </div>
+      
+      <!-- Empty state placeholder -->
+      <div id="empty-state" class="empty-state hidden">
+        <i class="ti ti-address-book-off empty-icon"></i>
+        <h3>No Contacts Found</h3>
+        <p>Start building your secure encrypted address book now.</p>
+        <button class="btn btn-accent" style="margin-top: 8px;" onclick="createNewContact()">+ Add Contact</button>
+      </div>
+    </main>
+
+    <!-- Right Panel: Contact Editor / Viewer -->
+    <section class="editor-pane closed" id="editor-pane">
+      <!-- Unselected Contact state -->
+      <div id="editor-placeholder" class="editor-placeholder-state">
+        <i class="ti ti-user-shield placeholder-icon"></i>
+        <p>Select a contact to view their details or edit their profile.</p>
+      </div>
+
+      <!-- Active Contact view/edit state -->
+      <div id="editor-content" class="editor-content-wrapper hidden">
+
+        <!-- Viewer Mode -->
+        <div id="contact-viewer" class="viewer-mode">
+          <div class="editor-toolbar">
+            <button class="icon-btn close-btn" onclick="closeEditor()" title="Close Panel">
+              <i class="ti ti-arrow-left"></i>
+            </button>
+            <div class="toolbar-actions">
+              <button class="btn btn-secondary" onclick="enterEditMode()">
+                <i class="ti ti-edit"></i> Edit
+              </button>
+              <button class="btn btn-danger-text" onclick="deleteActiveContact()">
+                <i class="ti ti-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+          
+          <div class="viewer-body">
+            <div class="viewer-avatar" id="view-avatar">JD</div>
+            <div class="viewer-title-block">
+              <h2 id="view-fullname" class="viewer-name">John Doe</h2>
+              <span id="view-job-title" class="viewer-job">Software Engineer at Shogun</span>
+            </div>
+            
+            <div class="viewer-quick-actions">
+              <a href="#" id="action-call" class="quick-action-button">
+                <i class="ti ti-phone"></i>
+                <span>Call</span>
+              </a>
+              <a href="#" id="action-email" class="quick-action-button">
+                <i class="ti ti-mail"></i>
+                <span>Email</span>
+              </a>
+              <button id="action-fav" class="quick-action-button" onclick="toggleActiveContactFavorite()">
+                <i class="ti ti-star"></i>
+                <span>Favorite</span>
+              </button>
+            </div>
+            
+            <div class="viewer-details-list">
+              <div class="detail-item-row" id="view-row-phone">
+                <i class="ti ti-phone detail-item-icon"></i>
+                <div class="detail-item-text-wrapper">
+                  <span class="detail-item-label">Phone</span>
+                  <span class="detail-item-value" id="view-phone">+39 333 1234567</span>
+                </div>
+              </div>
+              <div class="detail-item-row" id="view-row-email">
+                <i class="ti ti-mail detail-item-icon"></i>
+                <div class="detail-item-text-wrapper">
+                  <span class="detail-item-label">Email</span>
+                  <span class="detail-item-value" id="view-email">john.doe@shogun.dev</span>
+                </div>
+              </div>
+              <div class="detail-item-row" id="view-row-group">
+                <i class="ti ti-tag detail-item-icon"></i>
+                <div class="detail-item-text-wrapper">
+                  <span class="detail-item-label">Group / Label</span>
+                  <span class="detail-item-value" id="view-group" style="text-transform: capitalize;">Work</span>
+                </div>
+              </div>
+              <div class="detail-item-row" id="view-row-notes">
+                <i class="ti ti-notes detail-item-icon"></i>
+                <div class="detail-item-text-wrapper">
+                  <span class="detail-item-label">Notes</span>
+                  <span class="detail-item-value notes" id="view-notes">Private comments here.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor Mode -->
+        <div id="contact-editor" class="editor-mode hidden">
+          <div class="editor-toolbar">
+            <button class="icon-btn close-btn" onclick="cancelEditorEdit()" title="Cancel">
+              <i class="ti ti-x"></i> Cancel
+            </button>
+            <div class="toolbar-actions">
+              <button class="btn btn-accent" onclick="saveActiveContact()">
+                <i class="ti ti-device-floppy"></i> Save
+              </button>
+            </div>
+          </div>
+          <form class="editor-form" onsubmit="event.preventDefault();">
+            <div class="form-group-row">
+              <div class="form-group" style="flex: 1;">
+                <label class="detail-item-label">First Name</label>
+                <input type="text" id="editor-first-name" placeholder="John" class="editor-input" required>
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label class="detail-item-label">Last Name</label>
+                <input type="text" id="editor-last-name" placeholder="Doe" class="editor-input">
+              </div>
+            </div>
+            
+            <div class="form-group-row">
+              <div class="form-group" style="flex: 1.2;">
+                <label class="detail-item-label">Company</label>
+                <input type="text" id="editor-company" placeholder="Shogun Inc." class="editor-input">
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label class="detail-item-label">Job Title</label>
+                <input type="text" id="editor-job" placeholder="Engineer" class="editor-input">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="detail-item-label">Email</label>
+              <input type="email" id="editor-email" placeholder="john.doe@email.com" class="editor-input">
+            </div>
+
+            <div class="form-group">
+              <label class="detail-item-label">Phone Number</label>
+              <input type="tel" id="editor-phone" placeholder="+39 333 4567890" class="editor-input">
+            </div>
+
+            <div class="form-group">
+              <label class="detail-item-label">Group / Label (e.g. Work, Friends, Family)</label>
+              <input type="text" id="editor-cat" placeholder="Work" class="editor-input">
+            </div>
+
+            <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+              <label class="detail-item-label">Private Notes</label>
+              <textarea id="editor-notes" placeholder="Write any secure private details about this contact here..."
+                class="editor-textarea"></textarea>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Theme Script -->
+  <script>
+    let currentTheme = localStorage.getItem('theme') || 'light';
+
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      const themeIcon = document.getElementById('theme-icon');
+      if (themeIcon) {
+        themeIcon.className = currentTheme === 'light' ? 'ti ti-sun' : 'ti ti-moon';
+      }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', currentTheme);
+      applyTheme();
+    }
+
+    document.addEventListener('DOMContentLoaded', applyTheme);
+    window.toggleTheme = toggleTheme;
+  </script>
+
+  <!-- P2P and Encryption Module -->
+  <script type="module">
+    import ZEN from 'https://cdn.jsdelivr.net/gh/scobru/zen@main/zen.min.js';
+
+    let zen;
+    let pair;
+    let isAuthenticated = false;
+
+    // Local decrypted contacts memory store
+    const localContacts = {};
+    let selectedContactId = null;
+    let isEditing = false;
+    let activeCategory = 'all'; // 'all', 'favorites', or group name
+    let searchQuery = '';
+
+    const relays = ["wss://delay.scobrudot.dev/zen", "wss://delay.up.railway.app/zen", "wss://zen.akao.io:8420/zen", "wss://zen0.akao.io:8420/zen", "wss://zen1.akao.io:8420/zen"];
+    localStorage.removeItem('zenPeers');
+
+    zen = new ZEN({
+      peers: relays,
+    });
+
+    // Handle authentication / unlock
+    async function login() {
+      const userInput = document.getElementById('user-input').value || sessionStorage.getItem('zen_user');
+      const passInput = document.getElementById('pass-input').value || sessionStorage.getItem('zen_pass');
+      if (!userInput || !passInput) return;
+
+      try {
+        const btn = document.getElementById('login-btn');
+        btn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Decrypting...';
+        btn.disabled = true;
+
+        pair = await ZEN.pair(null, { seed: userInput + passInput });
+        isAuthenticated = true;
+
+        sessionStorage.setItem('zen_user', userInput);
+        sessionStorage.setItem('zen_pass', passInput);
+
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+
+        // Update E2EE ping indicator
+        const ping = document.getElementById('status-ping');
+        if (ping) {
+          ping.style.backgroundColor = '#2ec4b6';
+          ping.style.boxShadow = '0 0 8px #2ec4b6';
+        }
+        const statusText = document.getElementById('status-footer-text');
+        if (statusText) {
+          statusText.textContent = 'Decrypted & Synced';
+        }
+
+        applyTheme(); 
+        loadContacts();
+      } catch (e) {
+        console.error("Login Error:", e);
+        alert("Decryption failed: " + e.message);
+        const btn = document.getElementById('login-btn');
+        if (btn) {
+          btn.innerHTML = '<i class="ti ti-lock-open"></i> Decrypt & Enter';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    // Load P2P Encrypted contacts subscription
+    function loadContacts() {
+      console.log("loadContacts subscription initialized.");
+      zen.get('~' + pair.pub).get('contacts').map().on(async (node, id) => {
+        console.log("loadContacts received node:", id, node);
+        if (!node) {
+          delete localContacts[id];
+          if (selectedContactId === id) {
+            closeEditor();
+          }
+          triggerRender();
+          return;
+        }
+
+        try {
+          // Field-by-field decryption
+          const firstName = await ZEN.decrypt(node.firstName, pair);
+          const lastName = await ZEN.decrypt(node.lastName, pair) || '';
+          const email = await ZEN.decrypt(node.email, pair) || '';
+          const phone = await ZEN.decrypt(node.phone, pair) || '';
+          const company = await ZEN.decrypt(node.company, pair) || '';
+          const job = await ZEN.decrypt(node.job, pair) || '';
+          const category = await ZEN.decrypt(node.cat, pair) || 'other';
+          const favStr = await ZEN.decrypt(node.favorite, pair) || 'false';
+          const favorite = favStr === 'true';
+          const notes = await ZEN.decrypt(node.notes, pair) || '';
+
+          localContacts[id] = {
+            id,
+            firstName,
+            lastName,
+            email,
+            phone,
+            company,
+            job,
+            category,
+            favorite,
+            notes,
+            timestamp: node.timestamp || Date.now()
+          };
+          console.log("loadContacts decrypted contact success:", id, localContacts[id]);
+        } catch (e) {
+          console.error("Could not decrypt contact node:", id, e);
+          return;
+        }
+
+        triggerRender();
+      });
+    }
+
+    // Debounced UI render trigger
+    let renderTimeout = null;
+    function triggerRender() {
+      if (renderTimeout) clearTimeout(renderTimeout);
+      renderTimeout = setTimeout(() => {
+        renderApp();
+      }, 50);
+    }
+
+    // Master render function
+    function renderApp() {
+      const contactsArray = Object.values(localContacts);
+
+      // Extract unique groups & count
+      const groups = {};
+      let favCount = 0;
+      contactsArray.forEach(c => {
+        if (c.favorite) favCount++;
+        const grp = c.category ? c.category.toLowerCase().trim() : 'other';
+        groups[grp] = (groups[grp] || 0) + 1;
+      });
+
+      // Update Favorites navigation count
+      document.getElementById('count-favs').textContent = favCount;
+      document.getElementById('count-all').textContent = contactsArray.length;
+
+      // Update sidebar groups list
+      const groupsContainer = document.getElementById('sidebar-categories');
+      groupsContainer.innerHTML = '';
+      Object.entries(groups).sort().forEach(([grpName, count]) => {
+        const item = document.createElement('a');
+        item.href = '#';
+        item.className = `nav-item ${activeCategory === grpName ? 'active' : ''}`;
+        item.onclick = (e) => {
+          e.preventDefault();
+          setCategoryFilter(grpName);
+        };
+        item.innerHTML = `
+          <i class="ti ti-tag"></i>
+          <span class="nav-text" style="text-transform: capitalize;">${escapeHtml(grpName)}</span>
+          <span class="nav-count">${count}</span>
+        `;
+        groupsContainer.appendChild(item);
+      });
+
+      // Filter contacts in memory
+      let filtered = contactsArray;
+      if (activeCategory === 'favorites') {
+        filtered = filtered.filter(c => c.favorite);
+      } else if (activeCategory !== 'all') {
+        filtered = filtered.filter(c => c.category.toLowerCase().trim() === activeCategory);
+      }
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(c =>
+          c.firstName.toLowerCase().includes(q) ||
+          c.lastName.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q) ||
+          c.phone.toLowerCase().includes(q) ||
+          c.company.toLowerCase().includes(q) ||
+          c.notes.toLowerCase().includes(q)
+        );
+      }
+
+      // Update count label in header
+      const labelCount = document.getElementById('contacts-count-label');
+      labelCount.textContent = `${filtered.length} contact${filtered.length !== 1 ? 's' : ''}`;
+
+      // Render alphabet sections
+      const listContainer = document.getElementById('contacts-container');
+      const emptyState = document.getElementById('empty-state');
+      listContainer.innerHTML = '';
+
+      if (filtered.length === 0) {
+        listContainer.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+      } else {
+        listContainer.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+
+        // Group alphabetically by first letter of First Name
+        const alphabetGroups = {};
+        filtered.forEach(c => {
+          const letter = (c.firstName || '#').charAt(0).toUpperCase();
+          const key = /^[A-Z]$/.test(letter) ? letter : '#';
+          if (!alphabetGroups[key]) alphabetGroups[key] = [];
+          alphabetGroups[key].push(c);
+        });
+
+        // Render sorted A-Z headings
+        Object.keys(alphabetGroups).sort().forEach(letter => {
+          const groupEl = document.createElement('div');
+          groupEl.className = 'alpha-group';
+          
+          const header = document.createElement('div');
+          header.className = 'alpha-header';
+          header.textContent = letter;
+          groupEl.appendChild(header);
+
+          // Sort contacts inside group: first name then last name
+          alphabetGroups[letter].sort((a, b) => {
+            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+
+          alphabetGroups[letter].forEach(contact => {
+            const row = document.createElement('div');
+            const isSelected = selectedContactId === contact.id;
+            row.className = `contact-row ${isSelected ? 'selected' : ''}`;
+            row.onclick = () => selectContact(contact.id);
+
+            const displayName = `${contact.firstName} ${contact.lastName}`.trim();
+            const initials = `${contact.firstName.charAt(0)}${contact.lastName.charAt(0) || ''}`.toUpperCase();
+            const avColor = getAvatarColor(displayName);
+
+            const metaCompany = contact.company ? `${contact.job ? contact.job + ' at ' : ''}${contact.company}` : (contact.job || '—');
+
+            row.innerHTML = `
+              <div class="contact-info-block">
+                <div class="avatar-circle" style="background-color: ${avColor}">${initials}</div>
+                <div class="contact-text-details">
+                  <span class="contact-name">${escapeHtml(displayName)}</span>
+                  <span class="contact-meta-field">${escapeHtml(contact.phone || '—')}</span>
+                  <span class="contact-meta-field" style="font-family: var(--font-sans); color: var(--text-muted);">${escapeHtml(contact.email || '—')}</span>
+                  <span class="contact-meta-field" style="font-family: var(--font-sans); text-align: right; margin-right: 12px;">${escapeHtml(metaCompany)}</span>
+                </div>
+              </div>
+              <div class="contact-actions">
+                <button class="contact-action-btn ${contact.favorite ? 'fav-active' : ''}" onclick="event.stopPropagation(); toggleContactFavorite('${contact.id}')" title="Toggle Favorite">
+                  <i class="ti ti-star${contact.favorite ? '-filled' : ''}"></i>
+                </button>
+                <button class="contact-action-btn" onclick="event.stopPropagation(); editContactFromCard('${contact.id}')" title="Edit Contact">
+                  <i class="ti ti-edit"></i>
+                </button>
+                <button class="contact-action-btn" onclick="event.stopPropagation(); deleteContactFromCard('${contact.id}')" title="Delete Contact">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </div>
+            `;
+            groupEl.appendChild(row);
+          });
+
+          listContainer.appendChild(groupEl);
+        });
+      }
+
+      renderEditorPane();
+    }
+
+    // Detail Panel Renderer
+    function renderEditorPane() {
+      const editorPane = document.getElementById('editor-pane');
+      const placeholder = document.getElementById('editor-placeholder');
+      const content = document.getElementById('editor-content');
+
+      if (!selectedContactId) {
+        editorPane.classList.add('closed');
+        placeholder.classList.remove('hidden');
+        content.classList.add('hidden');
+        return;
+      }
+
+      editorPane.classList.remove('closed');
+      placeholder.classList.add('hidden');
+      content.classList.remove('hidden');
+
+      const viewerMode = document.getElementById('contact-viewer');
+      const editorMode = document.getElementById('contact-editor');
+
+      if (isEditing) {
+        viewerMode.classList.add('hidden');
+        editorMode.classList.remove('hidden');
+
+        const firstNameInput = document.getElementById('editor-first-name');
+        const lastNameInput = document.getElementById('editor-last-name');
+        const companyInput = document.getElementById('editor-company');
+        const jobInput = document.getElementById('editor-job');
+        const emailInput = document.getElementById('editor-email');
+        const phoneInput = document.getElementById('editor-phone');
+        const catInput = document.getElementById('editor-cat');
+        const notesInput = document.getElementById('editor-notes');
+
+        if (selectedContactId === 'new') {
+          if (!firstNameInput.dataset.modified) {
+            firstNameInput.value = '';
+            lastNameInput.value = '';
+            companyInput.value = '';
+            jobInput.value = '';
+            emailInput.value = '';
+            phoneInput.value = '';
+            catInput.value = '';
+            notesInput.value = '';
+          }
+        } else {
+          const contact = localContacts[selectedContactId];
+          if (contact && !firstNameInput.dataset.modified) {
+            firstNameInput.value = contact.firstName;
+            lastNameInput.value = contact.lastName;
+            companyInput.value = contact.company;
+            jobInput.value = contact.job;
+            emailInput.value = contact.email;
+            phoneInput.value = contact.phone;
+            catInput.value = contact.category;
+            notesInput.value = contact.notes;
+          }
+        }
+      } else {
+        viewerMode.classList.remove('hidden');
+        editorMode.classList.add('hidden');
+
+        // Clear modification flags
+        delete document.getElementById('editor-first-name').dataset.modified;
+
+        const contact = localContacts[selectedContactId];
+        if (contact) {
+          const displayName = `${contact.firstName} ${contact.lastName}`.trim();
+          const initials = `${contact.firstName.charAt(0)}${contact.lastName.charAt(0) || ''}`.toUpperCase();
+          
+          const avatar = document.getElementById('view-avatar');
+          avatar.textContent = initials;
+          avatar.style.backgroundColor = getAvatarColor(displayName);
+
+          document.getElementById('view-fullname').textContent = displayName;
+          
+          const metaTitle = contact.company ? `${contact.job ? contact.job + ' at ' : ''}${contact.company}` : (contact.job || 'Private Contact');
+          document.getElementById('view-job-title').textContent = metaTitle;
+
+          // Call action link
+          const actionCall = document.getElementById('action-call');
+          if (contact.phone) {
+            actionCall.href = `tel:${contact.phone}`;
+            actionCall.classList.remove('hidden');
+            document.getElementById('view-row-phone').classList.remove('hidden');
+            document.getElementById('view-phone').textContent = contact.phone;
+          } else {
+            actionCall.classList.add('hidden');
+            document.getElementById('view-row-phone').classList.add('hidden');
+          }
+
+          // Email action link
+          const actionEmail = document.getElementById('action-email');
+          if (contact.email) {
+            actionEmail.href = `mailto:${contact.email}`;
+            actionEmail.classList.remove('hidden');
+            document.getElementById('view-row-email').classList.remove('hidden');
+            document.getElementById('view-email').textContent = contact.email;
+          } else {
+            actionEmail.classList.add('hidden');
+            document.getElementById('view-row-email').classList.add('hidden');
+          }
+
+          // Favorite button styling
+          const actionFav = document.getElementById('action-fav');
+          if (contact.favorite) {
+            actionFav.innerHTML = '<i class="ti ti-star-filled" style="color: #f59e0b;"></i><span>Favorite</span>';
+            actionFav.style.borderColor = '#f59e0b';
+            actionFav.style.background = 'rgba(245, 158, 11, 0.05)';
+          } else {
+            actionFav.innerHTML = '<i class="ti ti-star"></i><span>Favorite</span>';
+            actionFav.style.borderColor = 'rgba(59, 130, 246, 0.15)';
+            actionFav.style.background = 'var(--accent-light)';
+          }
+
+          // Group
+          if (contact.category) {
+            document.getElementById('view-row-group').classList.remove('hidden');
+            document.getElementById('view-group').textContent = contact.category;
+          } else {
+            document.getElementById('view-row-group').classList.add('hidden');
+          }
+
+          // Notes
+          if (contact.notes) {
+            document.getElementById('view-row-notes').classList.remove('hidden');
+            document.getElementById('view-notes').textContent = contact.notes;
+          } else {
+            document.getElementById('view-row-notes').classList.add('hidden');
+          }
+        } else {
+          // Decrypting state
+          document.getElementById('view-avatar').textContent = '—';
+          document.getElementById('view-avatar').style.backgroundColor = 'var(--active-bg)';
+          document.getElementById('view-fullname').textContent = 'Decrypting...';
+          document.getElementById('view-job-title').textContent = '';
+          document.getElementById('action-call').classList.add('hidden');
+          document.getElementById('action-email').classList.add('hidden');
+          document.getElementById('view-row-phone').classList.add('hidden');
+          document.getElementById('view-row-email').classList.add('hidden');
+          document.getElementById('view-row-group').classList.add('hidden');
+          document.getElementById('view-row-notes').classList.add('hidden');
+        }
+      }
+    }
+
+    // CRUD - Save contact
+    async function saveActiveContact() {
+      if (!isAuthenticated) return;
+      const firstName = document.getElementById('editor-first-name').value.trim();
+      const lastName = document.getElementById('editor-last-name').value.trim();
+      const company = document.getElementById('editor-company').value.trim();
+      const job = document.getElementById('editor-job').value.trim();
+      const email = document.getElementById('editor-email').value.trim();
+      const phone = document.getElementById('editor-phone').value.trim();
+      const cat = document.getElementById('editor-cat').value.trim() || 'other';
+      const notes = document.getElementById('editor-notes').value.trim();
+
+      if (!firstName) {
+        showToast('Please enter at least a First Name.');
+        return;
+      }
+
+      const saveBtn = document.querySelector('#contact-editor .btn-accent');
+      const originalHtml = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Saving...';
+      saveBtn.disabled = true;
+
+      try {
+        console.log("saveActiveContact encrypting fields...");
+        const encFirst = await ZEN.encrypt(firstName, pair);
+        const encLast = await ZEN.encrypt(lastName, pair);
+        const encComp = await ZEN.encrypt(company, pair);
+        const encJob = await ZEN.encrypt(job, pair);
+        const encEmail = await ZEN.encrypt(email, pair);
+        const encPhone = await ZEN.encrypt(phone, pair);
+        const encCat = await ZEN.encrypt(cat, pair);
+        const encNotes = await ZEN.encrypt(notes, pair);
+
+        // Keep favorite state if updating, default to false
+        let favState = 'false';
+        if (selectedContactId !== 'new' && localContacts[selectedContactId]) {
+          favState = localContacts[selectedContactId].favorite ? 'true' : 'false';
+        }
+        const encFav = await ZEN.encrypt(favState, pair);
+
+        const node = {
+          firstName: encFirst,
+          lastName: encLast,
+          company: encComp,
+          job: encJob,
+          email: encEmail,
+          phone: encPhone,
+          cat: encCat,
+          favorite: encFav,
+          notes: encNotes,
+          timestamp: Date.now(),
+          encrypted: true
+        };
+
+        const isNew = selectedContactId === 'new';
+        const soul = isNew ? ('contact-' + Date.now() + '-' + Math.random().toString(36).substring(7)) : selectedContactId;
+
+        console.log("saveActiveContact putting node:", soul, node);
+        zen.get('~' + pair.pub).get('contacts').get(soul).put(node, (ack) => {
+          saveBtn.innerHTML = originalHtml;
+          saveBtn.disabled = false;
+          console.log("saveActiveContact put callback ack:", ack);
+          if (ack && ack.err) {
+            alert("Storage failed: " + ack.err);
+          } else {
+            showToast(isNew ? 'Contact encrypted and saved!' : 'Contact profile updated!');
+            isEditing = false;
+            selectedContactId = soul; 
+            triggerRender();
+          }
+        }, { authenticator: pair });
+      } catch (err) {
+        console.error("saveActiveContact encryption/save failed:", err);
+        saveBtn.innerHTML = originalHtml;
+        saveBtn.disabled = false;
+        alert("Encryption failed: " + err.message);
+      }
+    }
+
+    // CRUD - Delete Contact
+    async function deleteActiveContact() {
+      if (!selectedContactId || selectedContactId === 'new') return;
+      await deleteContact(selectedContactId);
+    }
+
+    async function deleteContact(soul) {
+      if (!isAuthenticated) return;
+      const contact = localContacts[soul];
+      const displayName = contact ? `${contact.firstName} ${contact.lastName}`.trim() : 'this contact';
+      if (!confirm(`Are you sure you want to permanently delete "${displayName}"?`)) return;
+
+      zen.get('~' + pair.pub).get('contacts').get(soul).put(null, (ack) => {
+        if (ack && !ack.err) {
+          showToast('Contact deleted from address book.');
+          if (selectedContactId === soul) {
+            selectedContactId = null;
+            isEditing = false;
+          }
+          delete localContacts[soul];
+          triggerRender();
+        } else if (ack && ack.err) {
+          alert("Deletion failed: " + ack.err);
+        }
+      }, { authenticator: pair });
+    }
+
+    // Toggle Favorite state
+    async function toggleContactFavorite(id) {
+      if (!isAuthenticated) return;
+      const contact = localContacts[id];
+      if (!contact) return;
+
+      const newFavState = !contact.favorite;
+      
+      try {
+        const encFav = await ZEN.encrypt(newFavState ? 'true' : 'false', pair);
+        zen.get('~' + pair.pub).get('contacts').get(id).get('favorite').put(encFav, (ack) => {
+          if (ack && ack.err) {
+            console.error("Favorite toggle failed:", ack.err);
+          } else {
+            // Local state updates instantly, map will sync later
+            contact.favorite = newFavState;
+            showToast(newFavState ? 'Added to Favorites' : 'Removed from Favorites');
+            triggerRender();
+          }
+        }, { authenticator: pair });
+      } catch (err) {
+        console.error("Favorite encryption error:", err);
+      }
+    }
+
+    async function toggleActiveContactFavorite() {
+      if (!selectedContactId || selectedContactId === 'new') return;
+      await toggleContactFavorite(selectedContactId);
+    }
+
+    // Utility actions
+    function selectContact(id) {
+      selectedContactId = id;
+      isEditing = false;
+      triggerRender();
+    }
+
+    function createNewContact() {
+      selectedContactId = 'new';
+      isEditing = true;
+
+      const firstNameInput = document.getElementById('editor-first-name');
+      delete firstNameInput.dataset.modified;
+      firstNameInput.value = '';
+
+      triggerRender();
+      setTimeout(() => firstNameInput.focus(), 50);
+      closeSidebarMobile();
+    }
+
+    function editContactFromCard(id) {
+      selectedContactId = id;
+      isEditing = true;
+      const firstNameInput = document.getElementById('editor-first-name');
+      delete firstNameInput.dataset.modified;
+      triggerRender();
+    }
+
+    function deleteContactFromCard(id) {
+      deleteContact(id);
+    }
+
+    function enterEditMode() {
+      isEditing = true;
+      const firstNameInput = document.getElementById('editor-first-name');
+      delete firstNameInput.dataset.modified;
+      triggerRender();
+    }
+
+    function cancelEditorEdit() {
+      isEditing = false;
+      if (selectedContactId === 'new') {
+        selectedContactId = null;
+      }
+      triggerRender();
+    }
+
+    function closeEditor() {
+      selectedContactId = null;
+      isEditing = false;
+      triggerRender();
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategory = cat;
+      
+      // Update sidebar active highlights
+      const items = document.querySelectorAll('.sidebar-nav .nav-item');
+      items.forEach(el => el.classList.remove('active'));
+      
+      if (cat === 'all') {
+        document.getElementById('nav-all').classList.add('active');
+      } else if (cat === 'favorites') {
+        document.getElementById('nav-favs').classList.add('active');
+      }
+      
+      triggerRender();
+      closeSidebarMobile();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      triggerRender();
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    }
+
+    function closeSidebarMobile() {
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar.classList.contains('open')) {
+        toggleSidebar();
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('zen_user');
+      sessionStorage.removeItem('zen_pass');
+      window.location.reload();
+    }
+
+    function getAvatarColor(name) {
+      if (!name) return '#3b82f6';
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const colors = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', 
+        '#f43f5e', '#06b6d4', '#14b8a6', '#0ea5e9', '#6366f1'
+      ];
+      const idx = Math.abs(hash) % colors.length;
+      return colors[idx];
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Bind window globals for HTML interactions
+    window.login = login;
+    window.logout = logout;
+    window.createNewContact = createNewContact;
+    window.saveActiveContact = saveActiveContact;
+    window.deleteActiveContact = deleteActiveContact;
+    window.enterEditMode = enterEditMode;
+    window.cancelEditorEdit = cancelEditorEdit;
+    window.closeEditor = closeEditor;
+    window.setCategoryFilter = setCategoryFilter;
+    window.handleSearch = handleSearch;
+    window.toggleSidebar = toggleSidebar;
+    window.editContactFromCard = editContactFromCard;
+    window.deleteContactFromCard = deleteContactFromCard;
+    window.toggleContactFavorite = toggleContactFavorite;
+    window.toggleActiveContactFavorite = toggleActiveContactFavorite;
+
+    // Toast UI component
+    function showToast(message) {
+      let toast = document.getElementById('toast-notification');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<i class="ti ti-circle-check" style="color: var(--accent); font-size: 16px;"></i> ${message}`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Attach listeners
+    document.getElementById('user-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('pass-input').focus();
+    });
+    document.getElementById('pass-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') login();
+    });
+    document.getElementById('login-btn').addEventListener('click', login);
+
+    // Track user input modification so map sync won't overwrite input fields mid-typing
+    const inputs = ['editor-first-name', 'editor-last-name', 'editor-company', 'editor-job', 'editor-email', 'editor-phone', 'editor-cat', 'editor-notes'];
+    inputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        e.target.dataset.modified = "true";
+      });
+    });
+
+    // Auto-login session recovery check
+    const savedUser = sessionStorage.getItem('zen_user');
+    const savedPass = sessionStorage.getItem('zen_pass');
+    if (savedUser && savedPass) {
+      login();
+    }
+  </script>
+</body>
+
+</html>
