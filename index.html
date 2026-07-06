@@ -1931,31 +1931,46 @@
 
     // Toggle Favorite state
     async function toggleContactFavorite(id) {
-      if (!isAuthenticated) return;
+      console.log("toggleContactFavorite called for ID:", id);
+      if (!isAuthenticated) {
+        console.warn("toggleContactFavorite: Not authenticated!");
+        return;
+      }
       const contact = localContacts[id];
-      if (!contact) return;
+      if (!contact) {
+        console.warn("toggleContactFavorite: Contact not found in localContacts for ID:", id);
+        return;
+      }
 
       const newFavState = !contact.favorite;
+      console.log("toggleContactFavorite: current favorite state:", contact.favorite, "-> new state:", newFavState);
       
       try {
+        console.log("toggleContactFavorite: encrypting new favorite state...");
         const encFav = await ZEN.encrypt(newFavState ? 'true' : 'false', pair);
+        console.log("toggleContactFavorite: encrypted state:", encFav);
+        
         // Use merging .put() on the contact node itself instead of nested get('favorite')
+        console.log("toggleContactFavorite: putting to GunDB...");
         zen.get('~' + pair.pub).get('contacts').get(id).put({ favorite: encFav }, (ack) => {
+          console.log("toggleContactFavorite: GunDB put ack:", ack);
           if (ack && ack.err) {
-            console.error("Favorite toggle failed:", ack.err);
+            console.error("Favorite toggle failed in GunDB:", ack.err);
           } else {
             // Local state updates instantly, map will sync later
             contact.favorite = newFavState;
             showToast(newFavState ? 'Added to Favorites' : 'Removed from Favorites');
+            console.log("toggleContactFavorite: Local state updated to:", contact.favorite);
             triggerRender();
           }
         }, { authenticator: pair });
       } catch (err) {
-        console.error("Favorite encryption error:", err);
+        console.error("Favorite encryption/save error:", err);
       }
     }
 
     async function toggleActiveContactFavorite() {
+      console.log("toggleActiveContactFavorite called. selectedContactId:", selectedContactId);
       if (!selectedContactId || selectedContactId === 'new') return;
       await toggleContactFavorite(selectedContactId);
     }
