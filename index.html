@@ -1492,17 +1492,27 @@
         }
 
         try {
-          // Field-by-field decryption
-          const firstName = await ZEN.decrypt(node.firstName, pair);
-          const lastName = await ZEN.decrypt(node.lastName, pair) || '';
-          const email = await ZEN.decrypt(node.email, pair) || '';
-          const phone = await ZEN.decrypt(node.phone, pair) || '';
-          const company = await ZEN.decrypt(node.company, pair) || '';
-          const job = await ZEN.decrypt(node.job, pair) || '';
-          const category = await ZEN.decrypt(node.cat, pair) || 'other';
-          const favStr = await ZEN.decrypt(node.favorite, pair) || 'false';
+          const decryptField = async (cipher, defaultVal = '') => {
+            if (!cipher) return defaultVal;
+            try {
+              return await ZEN.decrypt(cipher, pair);
+            } catch (e) {
+              console.warn("Field decryption failed, using default:", e);
+              return defaultVal;
+            }
+          };
+
+          // Field-by-field decryption with safety guards
+          const firstName = await decryptField(node.firstName, 'Unnamed');
+          const lastName = await decryptField(node.lastName, '');
+          const email = await decryptField(node.email, '');
+          const phone = await decryptField(node.phone, '');
+          const company = await decryptField(node.company, '');
+          const job = await decryptField(node.job, '');
+          const category = await decryptField(node.cat, 'other');
+          const favStr = await decryptField(node.favorite, 'false');
           const favorite = favStr === 'true';
-          const notes = await ZEN.decrypt(node.notes, pair) || '';
+          const notes = await decryptField(node.notes, '');
 
           localContacts[id] = {
             id,
