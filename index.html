@@ -745,6 +745,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
     }
 
     .editor-input {
@@ -757,6 +758,7 @@
       font-size: 14px;
       transition: border-color 0.2s, box-shadow 0.2s;
       width: 100%;
+      min-width: 0;
     }
 
     .editor-input:focus,
@@ -1056,6 +1058,11 @@
 
     /* ── Responsive breakpoints ── */
     @media (max-width: 1024px) {
+      .form-group-row {
+        flex-direction: column;
+        gap: 16px;
+      }
+
       .editor-pane {
         position: absolute;
         top: 0;
