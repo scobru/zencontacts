@@ -1939,7 +1939,8 @@
       
       try {
         const encFav = await ZEN.encrypt(newFavState ? 'true' : 'false', pair);
-        zen.get('~' + pair.pub).get('contacts').get(id).get('favorite').put(encFav, (ack) => {
+        // Use merging .put() on the contact node itself instead of nested get('favorite')
+        zen.get('~' + pair.pub).get('contacts').get(id).put({ favorite: encFav }, (ack) => {
           if (ack && ack.err) {
             console.error("Favorite toggle failed:", ack.err);
           } else {
