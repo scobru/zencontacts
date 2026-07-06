@@ -1512,6 +1512,7 @@
           const category = await decryptField(node.cat, 'other');
           const favStr = await decryptField(node.favorite, 'false');
           const favorite = favStr === 'true';
+          console.log("loadContacts decrypted favorite for:", id, "cipher:", node.favorite, "decrypted:", favStr, "boolean:", favorite);
           const notes = await decryptField(node.notes, '');
 
           localContacts[id] = {
