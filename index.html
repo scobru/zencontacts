@@ -1879,6 +1879,7 @@
       }
 
       const saveBtn = document.querySelector('#contact-editor .btn-accent');
+      if (!saveBtn) return;
       const originalHtml = saveBtn.innerHTML;
       saveBtn.innerHTML = '<i class="ti ti-loader animate-spin"></i> Saving...';
       saveBtn.disabled = true;
@@ -2158,7 +2159,7 @@
         toast.className = 'toast';
         document.body.appendChild(toast);
       }
-      toast.innerHTML = `<i class="ti ti-circle-check" style="color: var(--accent); font-size: 16px;"></i> ${message}`;
+      toast.innerHTML = `<i class="ti ti-circle-check" style="color: var(--accent); font-size: 16px;"></i> ${escapeHtml(message)}`;
       toast.classList.add('show');
       setTimeout(() => {
         toast.classList.remove('show');
